@@ -29,11 +29,17 @@ class Router
 		//проверяем наличие запроса в routes.php
 		foreach ($this->routes as $uriPattern => $path) {
 			if (preg_match("~$uriPattern~",$uri)) {
-				$segments = explode('/', $path);
+				
+				$internalRoute = preg_replace("~$uriPattern~",$path,$uri);
+				
+				
+				$segments = explode('/', $internalRoute);
 				
 				$controllerName = ucfirst(array_shift($segments).'Controller');
 				
 				$actionName = 'action'.ucfirst(array_shift($segments));
+				
+				$parametrs = $segments;
 				
 				//подключаем файл класса контроллера
 				$controllerFile = ROOT.'/controllers/'.$controllerName.'.php';
@@ -46,7 +52,8 @@ class Router
 				
 				//создаем объект и вызываем метод
 				$controllerObject = new $controllerName;
-				$result = $controllerObject->$actionName();
+				
+				$result = call_user_func_array(array($controllerObject, $actionName),$parametrs);
 				if ($result != null) {
 					break;
 				}
